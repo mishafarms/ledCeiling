@@ -8,7 +8,7 @@ var getPixels = require("get-pixels");
 	
 	ideaFabLabs.setup();
 	
-	getPixels("c:\\Users\\mlw\\Downloads\\ifl-ceil.jpg", function(err, pixels) {
+	getPixels("c:\\Users\\mlw\\Downloads\\ifl-ceil2.jpg", function(err, pixels) {
 		if(err)
 		{
 			console.log("Bad image path");
