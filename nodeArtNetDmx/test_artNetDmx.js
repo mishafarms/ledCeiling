@@ -2,18 +2,18 @@
  * 
  */
 var util = require("util");
-var ideaFabLabs = require('./ideafablabs.js');
+var ledCeiling = require('./ledCeiling.js');
 var getPixels = require("get-pixels");
 
 	
-	ideaFabLabs.setup();
+	ledCeiling.setup();
 	
-	getPixels("c:\\Users\\mlw\\Downloads\\ifl-ceil2.jpg", function(err, pixels) {
+	getPixels("c:\\Users\\mlw\\Downloads\\ifl-ceil.jpg", function(err, pixels) {
 		if(err)
 		{
 			console.log("Bad image path");
 			return;
 		}
 		console.log("got pixels", pixels.shape.slice());
-		ideaFabLabs.writeImage(pixels);
+		ledCeiling.writeImage(pixels);
 		});
