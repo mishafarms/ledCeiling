@@ -18,11 +18,18 @@ var filename;
 	}
 
 	getPixels(filename, function(err, pixels) {
+		var y;
+		
 		if(err)
 		{
 			console.log("Bad image path " + filename);
 			return;
 		}
-		console.log("got pixels", pixels.shape.slice());
-		ledCeiling.writeImage(pixels);
+//		console.log("got pixels", pixels.shape.slice());
+		// loop the image up from the bottom
+		
+		for( y = 47 ; y >= 0 ; y-- )
+		{
+			ledCeiling.writeImageWithOffset(pixels, 0, 0, 0, y, 0, 0);
+		}
 		});
