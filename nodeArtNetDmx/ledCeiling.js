@@ -215,6 +215,8 @@ exports.setPixel = function(x, y, color)
 	uniData[ledMap[index].uni][ledMap[index].led + 2] = color & 0xff;
 };
 
+// This takes an ndarray which we expect was gotten or is in the format of get-pixels.
+
 exports.writeImage = function(image)
 {
 	// get the image dimensions
@@ -254,4 +256,134 @@ exports.writeImage = function(image)
 	}
 	
 	sendAllUnis();
+};
+
+exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,disY)
+{
+	var pixW, pixH;
+	
+	// get the image dimensions
+	
+	var dimensions = image.shape.slice();
+	
+	if(dimensions.length !== 3)
+	{
+		console.log("We can't handle images of " + dimensions.length + " dimensions");
+		return;
+	}
+
+	if( dimensions[1] < imgXOff )
+	{
+		console.log("The X offset is greater then the image width");
+		return;
+	}
+
+	if( (dimensions[1] - imgXOff) < imgW)
+	{
+		console.log("The X offset " + imgXOff + " + imgW " + imgW + " is greater then the actual image width " + dimensions[1]);
+		return;
+	}
+
+	if( dimensions[0] < imgYOff )
+	{
+		console.log("The Y offset is greater then the image width");
+		return;		
+	}
+
+	if( (dimensions[0] - imgYOff) < imgH)
+	{
+		console.log("The Y offset " + imgYOff + " + imgH " + imgH + " is greater then the actual image height " + dimensions[0]);
+		return;		
+	}
+
+	// we need to figure out which is bigger image piece or display
+	
+	if( imgW === 0 )
+	{
+		// the caller didn't specify so try the whole image width
+		// minus the offset
+		
+		pixW = dimensions[1] - imgXOff;
+	}
+	else
+	{
+		// start with the min of the image or the passed in value
+		
+		pixW = Math.min(dimensions[1] - imgXOff, imgW);
+	}
+	
+	if( imgH === 0 )
+	{
+		// the caller didn't specify so try the whole image height
+		// minus the offset
+		
+		pixH = dimensions[0] - imgYOff;
+	}
+	else
+	{
+		// start with the min of the image or the passed in value
+		
+		pixH = Math.min(dimensions[0] - imgYOff, imgH);
+	}
+
+	// which is smaller the display or the piece of image?
+	
+	var myHeight = Math.min(pixH, HEIGHT_PIXELS);
+	var myWidth = Math.min(pixW, WIDTH_PIXELS);
+	
+	// for now just start at the top left corner and set pixels
+
+	var y, x, z;
+	
+	for(y = 0 ; y < myHeight ; y++)
+	{
+		for(x = 0 ; x < myWidth ; x++)
+		{
+			var index = ((y + disY) * WIDTH_PIXELS) + (x + disX);
+			
+//			console.log("x/y " + x + "/" + y + " ");
+
+			for(z = 0 ; z < 3 ; z++)
+			{
+				uniData[ledMap[index].uni][ledMap[index].led + z] = image.get(y + imgYOff, x + imgXOff, z);
+//				console.log(z + "[" + image.get(y, x, z) + "] ");
+			}
+		}
+	}
+	
+	sendAllUnis();
+};
+
+exports.writeArray = function(data, width, height)
+{
+	// since this is a simple image 
+	// find out which is larger, the image or our display
+	
+	var myHeight = Math.min(height, HEIGHT_PIXELS);
+	var myWidth = Math.min(width, WIDTH_PIXELS);
+	
+	// for now just start at the top left corner and set pixels
+
+	var y, x;
+	
+	for(y = 0 ; y < myHeight ; y++)
+	{
+		for(x = 0 ; x < myWidth ; x++)
+		{
+			var index = (y * WIDTH_PIXELS) + x;
+			
+//			console.log("x/y " + x + "/" + y + " ");
+
+			// we need to get the single color value 
+			
+			var color = data[y * width + x];
+			
+			uniData[ledMap[index].uni][ledMap[index].led] = (color >> 16) & 0xff;
+			uniData[ledMap[index].uni][ledMap[index].led + 1] = (color >> 8) & 0xff;
+			uniData[ledMap[index].uni][ledMap[index].led + 2] = color & 0xff;
+		}
+	}
+	
+	sendAllUnis();
+	
 };
