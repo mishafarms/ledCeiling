@@ -268,6 +268,16 @@ exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,dis
 	
 	if(dimensions.length !== 3)
 	{
+		// try something
+		console.log("What the fuck");
+		var temp = image.pick(0,null,null,null);
+		var temp2 = image.pick(1,null,null,null);
+		var temp3 = image.pick(2,null,null,null);
+		
+		console.log("temp = " + temp.shape.slice());
+		console.log("temp2 = " + temp2.shape.slice());
+		console.log("temp3 = " + temp3.shape.slice());
+		
 		console.log("We can't handle images of " + dimensions.length + " dimensions");
 		return;
 	}
@@ -287,13 +297,12 @@ exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,dis
 	if( dimensions[0] < imgYOff )
 	{
 		console.log("The Y offset is greater then the image width");
-		return;		
+		return;
 	}
-
 	if( (dimensions[0] - imgYOff) < imgH)
 	{
 		console.log("The Y offset " + imgYOff + " + imgH " + imgH + " is greater then the actual image height " + dimensions[0]);
-		return;		
+		return;
 	}
 
 	// we need to figure out which is bigger image piece or display

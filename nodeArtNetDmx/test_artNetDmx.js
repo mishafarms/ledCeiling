@@ -26,10 +26,29 @@ var filename;
 			return;
 		}
 //		console.log("got pixels", pixels.shape.slice());
-		// loop the image up from the bottom
 		
-		for( y = 47 ; y >= 0 ; y-- )
+		// look to see if this is an animated image and if so then loop it 
+		var dimensions = pixels.shape.slice();
+		
+		if( dimensions.length === 4 )
 		{
-			ledCeiling.writeImageWithOffset(pixels, 0, 0, 0, y, 0, 0);
+			var imageIx;
+			
+			for(imageIx = 0 ; imageIx < dimensions[0] ; imageIx++)
+			{
+				var image = pixels.pick(imageIx, null, null, null);
+				ledCeiling.writeImage(image);
+			}
 		}
-		});
+		else
+		{
+			// loop the image up from the bottom
+
+			console.log("pixels " + pixels.shape.slice());
+	
+			for( y = 47 ; y >= 0 ; y-- )
+			{
+				ledCeiling.writeImageWithOffset(pixels, 0, 0, 0, y, 0, 0);
+			}
+		}
+	});
