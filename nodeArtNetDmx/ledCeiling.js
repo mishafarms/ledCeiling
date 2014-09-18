@@ -12,7 +12,18 @@ var PIXELS_PER_UNI = 90;
 var uniData = [];  // empty array holds arrays of data
 var hosts = []; // empty array holds artnet client
 var ledMap;
+var callbacks = []; // empty array holds callbacks for ticks, drives animation
 
+function LedCeilingCallback()
+{
+	// we are getting called every tick, so call all the callbacks and then send all the unis
+	var index;
+	
+	for( index = 0 ; index < callbacks.length ; index++ )
+	{
+		callbacks[index]();
+	}
+}
 
 function LedMap(len)
 {
@@ -175,7 +186,7 @@ var sendAllUnis =  exports.sendAllUnis = function sendAllUnis()
 	}
 };
 
-exports.setup = function()
+exports.setup = function(callback, tickTime)
 {
 	var host;
 	
@@ -196,7 +207,18 @@ exports.setup = function()
 		hosts.push(artnetclient.createClient("192.168.1."+host, 6454, 2));
 		uniData.push(allocData());
 	}
-
+	
+	// push thier callback on the stack 
+	
+	if( typeof callback === 'function')
+	{
+		callbacks.push(callback);
+	}
+	
+	// setup our callback every tickTimes
+	
+	setInterval(LedCeilingCallback, tickTime);
+	
 	// clear the leds
 	
 	sendAllUnis();

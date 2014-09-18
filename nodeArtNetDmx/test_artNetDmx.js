@@ -5,8 +5,84 @@ var util = require("util");
 var ledCeiling = require('./ledCeiling.js');
 var getPixels = require("get-pixels");
 var filename;
+var animateCnt = 0;
+
+var images = [];
+var curImage;
+var imageIx = 0;
+var imgYOff = 47;
+
+function animate() {
+	++animateCnt;
 	
-	ledCeiling.setup();
+	if( curImage === undefined )
+	{
+		if( images.length >= 1 )
+		{
+//	console.log("got pixels", pixels.shape.slice());
+
+			curImage = images.shift();
+		}
+		else
+		{
+			return;
+		}
+	}
+	
+	if( curImage === undefined )
+	{
+		return;
+	}
+	
+	// look to see if this is an animated image and if so then loop it 
+	var dimensions = curImage.shape.slice();
+	
+	if( dimensions.length === 4 )
+	{
+		// this is an animated GIF
+		
+		if( imageIx < dimensions[0] )
+		{
+			var image = curImage.pick(imageIx, null, null, null);
+			ledCeiling.writeImage(image);
+			imageIx++;
+		}
+
+		if( imageIx >= dimensions[0] )
+		{
+			curImage = undefined;
+			imageIx = 0;
+		}
+	}
+	else
+	{
+		if( imgYOff < 0 )
+		{
+			curImage = undefined;
+			imgYOff = 47;
+		}
+		else
+		{
+			ledCeiling.writeImageWithOffset(curImage, 0, 0, 0, imgYOff--, 0, 0);
+		}
+	}
+}
+
+function imageRead(err, pixels) {
+	var y;
+	
+	if(err)
+	{
+		console.log("Bad image path " + filename);
+		return;
+	}
+	else
+	{
+		images.push(pixels);
+	}
+}
+
+	ledCeiling.setup(animate, 15);
 	
 	if( process.argv[2] === undefined )
 	{
@@ -17,38 +93,4 @@ var filename;
 		filename = process.argv[2];
 	}
 
-	getPixels(filename, function(err, pixels) {
-		var y;
-		
-		if(err)
-		{
-			console.log("Bad image path " + filename);
-			return;
-		}
-//		console.log("got pixels", pixels.shape.slice());
-		
-		// look to see if this is an animated image and if so then loop it 
-		var dimensions = pixels.shape.slice();
-		
-		if( dimensions.length === 4 )
-		{
-			var imageIx;
-			
-			for(imageIx = 0 ; imageIx < dimensions[0] ; imageIx++)
-			{
-				var image = pixels.pick(imageIx, null, null, null);
-				ledCeiling.writeImage(image);
-			}
-		}
-		else
-		{
-			// loop the image up from the bottom
-
-			console.log("pixels " + pixels.shape.slice());
-	
-			for( y = 47 ; y >= 0 ; y-- )
-			{
-				ledCeiling.writeImageWithOffset(pixels, 0, 0, 0, y, 0, 0);
-			}
-		}
-	});
+	getPixels(filename, imageRead);

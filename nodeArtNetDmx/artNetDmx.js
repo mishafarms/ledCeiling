@@ -4,6 +4,7 @@ var dgram = require('dgram');
 var Buffer1 = require('buffer').Buffer;
 var util = require('util');
 var _socket;
+var _connected = 0;
 
 var SEQ_OFF = 12;
 var PHYS_OFF = 13;
@@ -11,6 +12,9 @@ var LEN_OFF = 16;
 var DATA_OFF = 18;
 
 var seq = 0;
+var myPort = 6454;
+
+var sema4 = 0;
 
 function ArtNetClient(host, port, universe) {
 	this._host = host;
@@ -19,6 +23,9 @@ function ArtNetClient(host, port, universe) {
 	if (_socket === undefined )
 	{
 		_socket = dgram.createSocket("udp4");
+		_socket.bind(myPort++, function(err){
+			_connected = 1;
+		});
 	}
 	
 	this.dmx = new Buffer(18 + 512);
@@ -33,34 +40,47 @@ function ArtNetClient(host, port, universe) {
 	this.dmx[14] = universe & 0xff; // 14
 	this.dmx[15] = (universe >> 8) & 0xff; // 15
 }
+
 exports.ArtNetClient = ArtNetClient;
 
-exports.createClient = function(host, port, universe) {
-return new ArtNetClient(host, port, universe);
+exports.isConnected = function(){
+	return _connected;
 };
 
-ArtNetClient.prototype.send = function(data) {
-// Calculate the length
-var length_upper = Math.floor(data.length / 256);
-var length_lower = data.length % 256;
-// set the sequence
-this.dmx.writeUInt8(seq++, SEQ_OFF, 1);
-// set the lenth to 512 always
-this.dmx.writeUInt16BE(512, LEN_OFF, 1);
+exports.createClient = function(host, port, universe) {
+	return new ArtNetClient(host, port, universe);
+};
 
-if (util.isArray(data))
-{
-	var x = 0;
-	
-	for(x = 0 ; x < data.length ; x++)
-	{
-		this.dmx[x + 18] = data[x];
-	}
+var countPkts = 0;
+
+function sentPkt(err, countBytes) {
+	console.log("We sent %d packets %d bytes\n",
+				++countPkts, countBytes);
 }
 
-_socket.send(this.dmx, 0, this.dmx.length, this._port, this._host, function(){});
-};
+ArtNetClient.prototype.send = function(data) {
+	// Calculate the length
+	var length_upper = Math.floor(data.length / 256);
+	var length_lower = data.length % 256;
+	// set the sequence
+	this.dmx.writeUInt8(seq++, SEQ_OFF, 1);
+	// set the lenth to 512 always
+	this.dmx.writeUInt16BE(512, LEN_OFF, 1);
 
-ArtNetClient.prototype.close = function(){
-	console.log("we sent one buffer");
+	if (util.isArray(data))
+	{
+		var x = 0;
+	
+		for(x = 0 ; x < data.length ; x++)
+		{
+			this.dmx[x + 18] = data[x];
+		}
+	}
+
+	// don't send if not connected
+	
+	if( _connected )
+	{
+		_socket.send(this.dmx, 0, this.dmx.length, this._port, this._host, sentPkt);
+	}
 };
