@@ -23,6 +23,8 @@ function LedCeilingCallback()
 	{
 		callbacks[index]();
 	}
+	
+	sendAllUnis();
 }
 
 function LedMap(len)
@@ -276,8 +278,6 @@ exports.writeImage = function(image)
 			}
 		}
 	}
-	
-	sendAllUnis();
 };
 
 exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,disY)
@@ -381,8 +381,6 @@ exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,dis
 			}
 		}
 	}
-	
-	sendAllUnis();
 };
 
 exports.writeArray = function(data, width, height)
