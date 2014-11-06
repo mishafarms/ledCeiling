@@ -18,13 +18,20 @@ function LedCeilingCallback()
 {
 	// we are getting called every tick, so call all the callbacks and then send all the unis
 	var index;
+	var updated = 0;
 	
 	for( index = 0 ; index < callbacks.length ; index++ )
 	{
-		callbacks[index]();
+		if( callbacks[index]() )
+		{
+			updated = 1;
+		}
 	}
-	
-	sendAllUnis();
+
+	if( updated == 1 )
+	{
+		sendAllUnis();		
+	}
 }
 
 function LedMap(len)
