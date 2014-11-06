@@ -25,13 +25,13 @@ function animate() {
 		}
 		else
 		{
-			return;
+			return 0;
 		}
 	}
 	
 	if( curImage === undefined )
 	{
-		return;
+		return 0;
 	}
 	
 	// look to see if this is an animated image and if so then loop it 
@@ -66,6 +66,10 @@ function animate() {
 			ledCeiling.writeImageWithOffset(curImage, 0, 0, 0, imgYOff--, 0, 0);
 		}
 	}
+	
+	/* We did something, let our caller know we want an update */
+	
+	return 1;
 }
 
 function imageRead(err, pixels) {
@@ -82,7 +86,7 @@ function imageRead(err, pixels) {
 	}
 }
 
-	ledCeiling.setup(animate, 15);
+	ledCeiling.setup(animate, 100);
 	
 	if( process.argv[2] === undefined )
 	{
