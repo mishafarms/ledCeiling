@@ -217,7 +217,7 @@ exports.setup = function(callback, tickTime)
 		uniData.push(allocData());
 	}
 	
-	// push thier callback on the stack 
+	// push their callback on the stack 
 	
 	if( typeof callback === 'function')
 	{
@@ -241,6 +241,7 @@ exports.setPixel = function(x, y, color)
 	}
 
 	var index = (y * WIDTH_PIXELS) + x;
+	
 	uniData[ledMap[index].uni][ledMap[index].led] = (color >> 16) & 0xff;
 	uniData[ledMap[index].uni][ledMap[index].led + 1] = (color >> 8) & 0xff;
 	uniData[ledMap[index].uni][ledMap[index].led + 2] = color & 0xff;
@@ -286,6 +287,9 @@ exports.writeImage = function(image)
 		}
 	}
 };
+
+// imgXOff and imgYOff are offsets within the image. imgW and imgH are the image width and height if
+// desired. set to 0 if not known. disX and disY are display offsets
 
 exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,disY)
 {
@@ -366,9 +370,10 @@ exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,dis
 
 	// which is smaller the display or the piece of image?
 	
-	var myHeight = Math.min(pixH, HEIGHT_PIXELS);
-	var myWidth = Math.min(pixW, WIDTH_PIXELS);
+	var myHeight = Math.min(pixH, HEIGHT_PIXELS - disY);
+	var myWidth = Math.min(pixW, WIDTH_PIXELS - disX);
 	
+	// if there is a display offset
 	// for now just start at the top left corner and set pixels
 
 	var y, x, z;
@@ -386,6 +391,39 @@ exports.writeImageWithOffset = function(image,imgXOff,imgYOff,imgW,imgH,disX,dis
 				uniData[ledMap[index].uni][ledMap[index].led + z] = image.get(y + imgYOff, x + imgXOff, z);
 //				console.log(z + "[" + image.get(y, x, z) + "] ");
 			}
+		}
+	}
+};
+
+exports.readArray = function(data, width,height)
+{
+	// since this is a simple image 
+	// find out which is larger, the image or our display
+	
+	var myHeight = Math.min(height, HEIGHT_PIXELS);
+	var myWidth = Math.min(width, WIDTH_PIXELS);
+	
+	// for now just start at the top left corner and get pixels
+
+	var y, x;
+	
+	for(y = 0 ; y < myHeight ; y++)
+	{
+		for(x = 0 ; x < myWidth ; x++)
+		{
+			var index = (y * WIDTH_PIXELS) + x;
+			
+//			console.log("x/y " + x + "/" + y + " ");
+
+			// we need to get the single color value 
+			
+			var color;
+			
+			color = uniData[ledMap[index].uni][ledMap[index].led] << 16;
+			color |= uniData[ledMap[index].uni][ledMap[index].led + 1] << 8;
+			color |= uniData[ledMap[index].uni][ledMap[index].led + 2];
+			
+			data[y * width + x] = color;
 		}
 	}
 };
@@ -419,7 +457,14 @@ exports.writeArray = function(data, width, height)
 			uniData[ledMap[index].uni][ledMap[index].led + 2] = color & 0xff;
 		}
 	}
+};
+
+exports.clear = function()
+{
+	var index;
 	
-	sendAllUnis();
-	
+	for( index = 0 ; index < uniData.lenth ; index++ )
+	{
+		uniData[index].fill(0);
+	}
 };

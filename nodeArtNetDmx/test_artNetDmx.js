@@ -25,7 +25,24 @@ function animate() {
 		}
 		else
 		{
-			return 0;
+			/* do something */
+			ledCeiling.clear();
+			if( imgYOff < 0 )
+			{
+				imgYOff = 47;
+			}
+
+			var x;
+			
+			for( x = 0 ; x < 30 ; x++ )
+			{
+				/* set a line to a color */
+
+				ledCeiling.setPixel(x, imgYOff, 0x400000);
+			}
+			imgYOff--;
+
+			return 1;
 		}
 	}
 	
@@ -63,7 +80,8 @@ function animate() {
 		}
 		else
 		{
-			ledCeiling.writeImageWithOffset(curImage, 0, 0, 0, imgYOff--, 0, 0);
+			ledCeiling.writeImageWithOffset(curImage, 0, 0, 0, 0, 0, imgYOff);
+			imgYOff--;
 		}
 	}
 	
@@ -86,7 +104,7 @@ function imageRead(err, pixels) {
 	}
 }
 
-	ledCeiling.setup(animate, 100);
+	ledCeiling.setup(animate, 50);
 	
 	if( process.argv[2] === undefined )
 	{
