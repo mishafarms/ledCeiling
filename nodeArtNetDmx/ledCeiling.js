@@ -462,9 +462,17 @@ exports.writeArray = function(data, width, height)
 exports.clear = function()
 {
 	var index;
+	var arr;
 	
-	for( index = 0 ; index < uniData.lenth ; index++ )
+	for( index = 0 ; index < uniData.length ; index++ )
 	{
-		uniData[index].fill(0);
+		arr = uniData[index];
+		
+		var x;
+		
+		for( x = 0 ; x < PIXELS_PER_UNI * 3 ; x++)
+		{
+			arr[x] = 0;
+		}
 	}
 };
