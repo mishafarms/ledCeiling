@@ -104,7 +104,7 @@ function imageRead(err, pixels) {
 	}
 }
 
-	ledCeiling.setup(animate, 50);
+	ledCeiling.setup(animate, 25);
 	
 	if( process.argv[2] === undefined )
 	{
